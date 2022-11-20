@@ -1,7 +1,7 @@
 require("dotenv").config();
 const inquirer = require("inquirer");
 const cTable = require("console.table");
-const connection = require("../db/connection");
+const connection = require("../db/connection.sql");
 //User prompt
 const userPrompt = async () => {
   const answers = await inquirer.prompt([
@@ -19,7 +19,7 @@ const userPrompt = async () => {
         "Delete a role",
         "Add an employee",
         "Delete an employee",
-        "Update an employee manager",
+        "View Employees by Department",
         "Show bugets in departments",
         "Exit",
       ],
@@ -44,6 +44,8 @@ const userPrompt = async () => {
     addEmployee();
   } else if (answers.action === "Delete an employee") {
     deleteEmployee();
+  } else if (answers.action === "View Employees by Department") {
+    deptartmentEmployee();
   } else if (answers.action === "Update an employee role") {
     updateEmployee();
   } else if (answers.actions === "Show bugets in departments") {
@@ -57,7 +59,7 @@ const viewDepartments = async () => {
   try {
     const [results] = await connection
       .promise()
-      .query(`select * from department`);
+      .query(`SELECT * FROM department`);
     console.table(results);
     userPrompt();
   } catch (err) {
@@ -67,7 +69,7 @@ const viewDepartments = async () => {
 //table for roles
 const viewRoles = async () => {
   try {
-    const [results] = await connection.promise().query(`select * from role`);
+    const [results] = await connection.promise().query(`SELECT * FROM role`);
     console.table(results);
     userPrompt();
   } catch (err) {
@@ -79,7 +81,7 @@ const viewEmployees = async () => {
   try {
     const [results] = await connection
       .promise()
-      .query(`select * from employee`);
+      .query(`SELECT * FROM employee`);
     console.table(results);
     userPrompt();
   } catch (err) {
@@ -98,7 +100,7 @@ const addDepartment = async () => {
   try {
     const [results] = await connection
       .promise()
-      .query(`insert into department (name) values (?)`, answers.name);
+      .query(`INSERT INTO department (name) VALUES (?)`, answers.name);
   } catch (err) {
     throw new Error(err);
   }
@@ -106,6 +108,20 @@ const addDepartment = async () => {
   viewDepartments();
   userPrompt();
 };
+
+const deptartmentEmployee = async () => {
+  try {
+    const [results] = await connection
+      .promise()
+      .query(
+        `SELECT employee.first_name, employee.last_name, department.name AS Department FROM employee Join role ON employee.role_is = role.id JOIN department ON role.department.id ORDER BY employee.id`
+      );
+  } catch (err) {
+    throw new Error(err);
+  }
+  console.table(results);
+};
+
 //deleting a department
 const deleteDepartment = async () => {
   const answers = await inquirer.prompt([
@@ -118,7 +134,7 @@ const deleteDepartment = async () => {
   try {
     const [results] = await connection
       .promise()
-      .query("delete from department where name = ?", answers.name);
+      .query("DELETE FROM department WHERE name = ?", answers.name);
   } catch (err) {
     throw new Error(err);
   }
@@ -127,7 +143,7 @@ const deleteDepartment = async () => {
 };
 //adding a new role
 const addRole = async () => {
-  connection.query("select * from department", async (err, res) => {
+  connection.query("SELECT * FROM department", async (err, res) => {
     const departmentNameRole = res.map((department) => department.name);
     const answers = await inquirer.prompt([
       {
@@ -153,7 +169,7 @@ const addRole = async () => {
       const [results] = await connection
         .promise()
         .query(
-          `insert into role (title, salary, department_id) values (?, ?, ?)`[
+          `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`[
             (answers.title, answers.salary, department.id)
           ]
         );
@@ -179,7 +195,7 @@ const deleteRole = async () => {
   try {
     const [results] = await connection
       .promise()
-      .query("delete from role where name = ?", answers.title);
+      .query("DELETE FROM role WHERE name = ?", answers.title);
   } catch (err) {
     throw new Error(err);
   }
@@ -188,7 +204,7 @@ const deleteRole = async () => {
 };
 //adding new employees
 const addEmployee = async () => {
-  connection.query("select * from role", async (err, res) => {
+  connection.query("SELECT * FROM role", async (err, res) => {
     const roleTitle = res.map((role) => role.title);
     const managersId = re.map((manager_id) => manager_id.id);
     const answers = await inquirer.prompt([
@@ -221,7 +237,7 @@ const addEmployee = async () => {
       const [results] = await connection
         .promise()
         .query(
-          "insert into employee (first_name,last_name, role_id, manager_id) values (?, ?, ?, ?)",
+          "INSERT INTO employee (first_name,last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
           [answers.first_name, answers.last_name, role.id, answers.manager_id]
         );
     } catch (err) {
@@ -251,28 +267,13 @@ const deleteEmployee = async () => {
   console.log("Employee deleted");
   userPrompt();
 };
-//updating employees manager
-const updateEmployee = async () => {
-  const answers = await inquirer.prompt([
-    {
-      type: "number",
-      name: "id",
-      message: "Which Employee(id) do you want to update?",
-    },
-    {
-      type: "number",
-      name: "role_id",
-      message: "Update role (ID)",
-    },
-  ]);
-};
-
+//budget
 const budget = async () => {
   try {
     const [results] = await connection
       .promise()
       .query(
-        `select department_id, sum(salary) as total budget from role group by department_id`
+        `SELECT department_id, SUM(salary) AS total budget FROM role GROUP BY department_id`
       );
     console.table(results);
     userPrompt();
