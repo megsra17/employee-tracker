@@ -1,7 +1,7 @@
 require("dotenv").config();
 const inquirer = require("inquirer");
 const cTable = require("console.table");
-const connection = require("../db/connection.sql");
+const connection = require("./db/connection.sql");
 //User prompt
 const userPrompt = async () => {
   const answers = await inquirer.prompt([
@@ -11,7 +11,7 @@ const userPrompt = async () => {
       message: "What would you like to look at/do?",
       choices: [
         "View all department",
-        "View all rols",
+        "View all roles",
         "View all employees",
         "Add a department",
         "Delete a department",
@@ -28,13 +28,13 @@ const userPrompt = async () => {
 
   if (answers.action === "View all department") {
     viewDepartments();
-  } else if (answers.action === "View all rols") {
+  } else if (answers.action === "View all roles") {
     viewRoles();
   } else if (answers.action === "View all employees") {
     viewEmployees();
   } else if (answers.action === "Add a department") {
     addDepartment();
-  } else if (answes.action === "Delete a department") {
+  } else if (answers.action === "Delete a department") {
     deleteDepartment();
   } else if (answers.action === "Add a role") {
     addRole();
@@ -164,7 +164,7 @@ const addRole = async () => {
     ]);
     try {
       const department = res.find(
-        (department) => department.name === answers.department
+        (department) => department.name === answers.departmentName
       );
       const [results] = await connection
         .promise()
@@ -176,11 +176,9 @@ const addRole = async () => {
     } catch (err) {
       throw new Error(err);
     }
-    console.log("Add new Role");
-    viewRoles();
-    userPrompt();
   });
-  console.log("Add new Department!");
+  console.log("Add new Role");
+  viewRoles();
   userPrompt();
 };
 //deleting role
@@ -206,7 +204,7 @@ const deleteRole = async () => {
 const addEmployee = async () => {
   connection.query("SELECT * FROM role", async (err, res) => {
     const roleTitle = res.map((role) => role.title);
-    const managersId = re.map((manager_id) => manager_id.id);
+    const managersId = res.map((manager_id) => manager_id.id);
     const answers = await inquirer.prompt([
       {
         type: "input",
