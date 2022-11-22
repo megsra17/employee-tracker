@@ -113,7 +113,6 @@ const addDepartment = async () => {
     throw new Error(err);
   }
   console.log("====== Add new Department! ======");
-  viewDepartments();
   userPrompt();
 };
 
@@ -173,7 +172,6 @@ const addRole = async () => {
       throw new Error(err);
     }
     console.log("====== New Role added =======");
-    viewRoles();
     userPrompt();
   });
 };
@@ -230,7 +228,6 @@ const addEmployee = async () => {
     ]);
     try {
       const role = res.find((role) => role.title === answers.roleName);
-      const manager = res.find((manager) => manager.id === answers.manager_id);
       const [results] = await connection
         .promise()
         .query(
@@ -241,7 +238,6 @@ const addEmployee = async () => {
       throw new Error(err);
     }
     console.log("====== Employee added ======");
-    viewEmployees();
     userPrompt();
   });
 };
