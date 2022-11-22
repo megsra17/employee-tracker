@@ -19,8 +19,7 @@ const userPrompt = async () => {
         "Delete a role",
         "Add an employee",
         "Delete an employee",
-        "View Employees by Department",
-        "Show bugets in departments",
+        "Show budgets in departments",
         "Exit",
       ],
     },
@@ -44,14 +43,12 @@ const userPrompt = async () => {
     addEmployee();
   } else if (answers.action === "Delete an employee") {
     deleteEmployee();
-  } else if (answers.action === "View Employees by Department") {
-    deptartmentEmployee();
   } else if (answers.action === "Update an employee role") {
     updateEmployee();
-  } else if (answers.actions === "Show bugets in departments") {
+  } else if (answers.action === "Show budgets in departments") {
     budget();
   } else {
-    connection.end();
+    process.exit(0);
   }
 };
 //table for departments
@@ -109,19 +106,6 @@ const addDepartment = async () => {
   userPrompt();
 };
 
-const deptartmentEmployee = async () => {
-  try {
-    const [results] = await connection
-      .promise()
-      .query(
-        `SELECT employee.first_name, employee.last_name, department.name AS Department FROM employee Join role ON employee.role_is = role.id JOIN department ON role.department.id ORDER BY employee.id`
-      );
-  } catch (err) {
-    throw new Error(err);
-  }
-  console.table(results);
-};
-
 //deleting a department
 const deleteDepartment = async () => {
   const answers = await inquirer.prompt([
@@ -141,6 +125,7 @@ const deleteDepartment = async () => {
   console.log("Department deleted");
   userPrompt();
 };
+
 //adding a new role
 const addRole = async () => {
   connection.query("SELECT * FROM department", async (err, res) => {
@@ -158,7 +143,7 @@ const addRole = async () => {
       },
       {
         type: "list",
-        name: "departmentName: ",
+        name: "departmentName",
         choices: departmentNameRole,
       },
     ]);
@@ -169,19 +154,21 @@ const addRole = async () => {
       const [results] = await connection
         .promise()
         .query(
-          `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`[
-            (answers.title, answers.salary, department.id)
-          ]
+          "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+          [answers.title, answers.salary, department.id]
         );
+      console.log(answers.title, answers.salary, department.id);
     } catch (err) {
       throw new Error(err);
     }
+    console.log("New Role added");
+    viewRoles();
+    userPrompt();
   });
-  console.log("Add new Role");
-  viewRoles();
-  userPrompt();
 };
+
 //deleting role
+
 const deleteRole = async () => {
   const answers = await inquirer.prompt([
     {
@@ -193,13 +180,14 @@ const deleteRole = async () => {
   try {
     const [results] = await connection
       .promise()
-      .query("DELETE FROM role WHERE name = ?", answers.title);
+      .query("DELETE FROM role WHERE title = ?", answers.title);
   } catch (err) {
     throw new Error(err);
   }
   console.log("Role deleted");
   userPrompt();
 };
+
 //adding new employees
 const addEmployee = async () => {
   connection.query("SELECT * FROM role", async (err, res) => {
@@ -235,7 +223,7 @@ const addEmployee = async () => {
       const [results] = await connection
         .promise()
         .query(
-          "INSERT INTO employee (first_name,last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+          "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
           [answers.first_name, answers.last_name, role.id, answers.manager_id]
         );
     } catch (err) {
@@ -267,11 +255,12 @@ const deleteEmployee = async () => {
 };
 //budget
 const budget = async () => {
+  console.log("test");
   try {
     const [results] = await connection
       .promise()
       .query(
-        `SELECT department_id, SUM(salary) AS total budget FROM role GROUP BY department_id`
+        `SELECT department_id, SUM(salary) AS total FROM role GROUP BY department_id`
       );
     console.table(results);
     userPrompt();
@@ -281,17 +270,3 @@ const budget = async () => {
 };
 
 userPrompt();
-
-// WHEN I choose to update an employee role
-// THEN I am prompted to select an employee to update and their new role and this information is updated in the database
-
-//Bonus
-// Update employee managers.
-
-// View employees by manager.
-
-// View employees by department.
-
-// Delete departments, roles, and employees.
-
-// View the total utilized budget of a department—in other words, the combined salaries of all employees in that department.
