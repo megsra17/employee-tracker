@@ -3,6 +3,13 @@ const inquirer = require("inquirer");
 const cTable = require("console.table");
 const connection = require("./db/connection.sql");
 //User prompt
+console.log(`
+     _____           _                     _____                         
+    |   __|_____ ___| |___ _ _ ___ ___    |     |___ ___ ___ ___ ___ ___ 
+    |   __|     | . | | . | | | -_| -_|   | | | | .'|   | .'| . | -_|  _|
+    |_____|_|_|_|  _|_|___|_  |___|___|   |_|_|_|__,|_|_|__,|_  |___|_|  
+                |_|       |___|                             |___|      
+                `);
 const userPrompt = async () => {
   const answers = await inquirer.prompt([
     {
@@ -57,7 +64,9 @@ const viewDepartments = async () => {
     const [results] = await connection
       .promise()
       .query(`SELECT * FROM department`);
+    console.log("====== Departments ======");
     console.table(results);
+
     userPrompt();
   } catch (err) {
     throw new Error(err);
@@ -67,6 +76,7 @@ const viewDepartments = async () => {
 const viewRoles = async () => {
   try {
     const [results] = await connection.promise().query(`SELECT * FROM role`);
+    console.log("====== Roles ======");
     console.table(results);
     userPrompt();
   } catch (err) {
@@ -79,6 +89,7 @@ const viewEmployees = async () => {
     const [results] = await connection
       .promise()
       .query(`SELECT * FROM employee`);
+    console.log("====== Employees ======");
     console.table(results);
     userPrompt();
   } catch (err) {
@@ -101,7 +112,7 @@ const addDepartment = async () => {
   } catch (err) {
     throw new Error(err);
   }
-  console.log("Add new Department!");
+  console.log("====== Add new Department! ======");
   viewDepartments();
   userPrompt();
 };
@@ -122,7 +133,7 @@ const deleteDepartment = async () => {
   } catch (err) {
     throw new Error(err);
   }
-  console.log("Department deleted");
+  console.log("====== Department deleted ======");
   userPrompt();
 };
 
@@ -161,7 +172,7 @@ const addRole = async () => {
     } catch (err) {
       throw new Error(err);
     }
-    console.log("New Role added");
+    console.log("====== New Role added =======");
     viewRoles();
     userPrompt();
   });
@@ -184,7 +195,7 @@ const deleteRole = async () => {
   } catch (err) {
     throw new Error(err);
   }
-  console.log("Role deleted");
+  console.log("====== Role deleted ======");
   userPrompt();
 };
 
@@ -229,7 +240,7 @@ const addEmployee = async () => {
     } catch (err) {
       throw new Error(err);
     }
-    console.log("Employee added");
+    console.log("====== Employee added ======");
     viewEmployees();
     userPrompt();
   });
@@ -250,7 +261,7 @@ const deleteEmployee = async () => {
   } catch (err) {
     throw new Error(err);
   }
-  console.log("Employee deleted");
+  console.log("====== Employee deleted ======");
   userPrompt();
 };
 //budget
@@ -262,6 +273,7 @@ const budget = async () => {
       .query(
         `SELECT department_id, SUM(salary) AS total FROM role GROUP BY department_id`
       );
+    console.log("====== This Years Budget ======");
     console.table(results);
     userPrompt();
   } catch (err) {
