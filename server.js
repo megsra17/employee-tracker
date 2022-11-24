@@ -262,7 +262,6 @@ const deleteEmployee = async () => {
 };
 //budget
 const budget = async () => {
-  console.log("test");
   try {
     const [results] = await connection
       .promise()
